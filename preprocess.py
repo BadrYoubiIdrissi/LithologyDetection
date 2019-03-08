@@ -1,20 +1,19 @@
 from PIL import Image
 import os
 from tqdm import tqdm
+import warnings
 
-def splitIntoSlices(input_path, output_path, verbose = True):
+def splitIntoSlices(input_path, output_path, max_files = -1):
+    warnings.simplefilter('ignore', Image.DecompressionBombWarning)
     max_height = 2**14
-    if verbose : 
-        file_iterator = tqdm(os.listdir(input_path))
-    else:
-        file_iterator = os.listdir(input_path)
-    for img_fn in file_iterator:
+    for img_fn in tqdm(os.listdir(input_path)[:max_files]):
         image = Image.open(os.path.join(input_path, img_fn))
         _, height = image.size
         divisible = height % max_height > 0
         for i in range(height//max_height+int(divisible)):
             a = slice(image, i)
-            a.save(os.path.join(output_path, "slice_"+str(i)+"_"+img_fn))
+            new_f_name = img_fn.split(".")[0]+"_slc_"+str(i)+".png"
+            a.save(os.path.join(output_path, new_f_name))
 
 
 def slice(image, i, max_height = 2**14):
